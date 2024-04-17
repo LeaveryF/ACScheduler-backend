@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Acadmin{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <h2> 房间信息 </h2>
+
+    <div class="room">
+        <table>
+            <tr>
+                <th>房间名</th>
+                <th>风速</th>
+                <th>模式</th>
+            </tr>
+
+        {% for room in rooms %}
+            <tr>
+                <td>{{ room.room_name }}</td>
+                <td>{{ room.room_type }}</td>
+                <td>{{ room.current_temp }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+{% endblock %}
