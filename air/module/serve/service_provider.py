@@ -1,12 +1,20 @@
+import threading
+from queue import Queue
 from simple_websocket import Client
 from datetime import datetime
 from typing import Tuple, Dict, Any
 
 
-class ServiceProvider:
+class ServiceProvider(threading.Thread):
 
-    def __init__(self):
-        pass
+    def __init__(self, daemon: bool = True):
+        super().__init__(daemon=daemon)
+        self.sema = threading.Semaphore(0)
+        self.queue = Queue()
+
+    def run(self):
+        while True:
+            self.sema.acquire()
 
     def serve(self, service: Tuple[int, datetime, int, str, Client]):
         # TODO: implement this

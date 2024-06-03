@@ -1,7 +1,27 @@
 from datetime import datetime
-from typing import Tuple
+from typing import Dict
 from simple_websocket import Client
 from sortedcontainers import SortedList
+
+
+class ServeObject:
+    """ServeObject 必须可以比较, 并且比较起来像 Tuple
+    (风速, 服务开始时间戳, 服务对象ID, 房间号, WebSocket)
+    """
+
+    def __init__(
+        self,
+        speed: int,
+        start_time: datetime,
+        service_id: int,
+        room_name: str,
+        ws: Client,
+    ) -> None:
+        self.speed = speed
+        self.start_time = start_time
+        self.service_id = service_id
+        self.room_name = room_name
+        self.ws = ws
 
 
 class ServeQueue:
@@ -25,62 +45,50 @@ class ServeQueue:
     """
 
     def __init__(self, capacity: int):
-        self.slist = SortedList()
-        self.time_list = SortedList()
-        self.counter = 0
+        self.serv_dict: Dict[str, ServeObject] = {}
+        self.speed_slist = SortedList()
+        self.time_slist = SortedList()
         self.capacity = capacity
-        self.serv_dict = {}
 
     def full(self) -> bool:
-        return len(self.slist) >= self.capacity
+        return len(self.speed_slist) >= self.capacity
 
-    def increase_counter(self) -> int:
-        tmp = self.counter
-        self.counter += 1
-        return tmp
-
-    def add(self, service: Tuple[int, datetime, int, str, Client]):
-        _, begin, _, room_name, _ = service
-        self.slist.add(service)
-        self.serv_dict[room_name] = service
-        self.time_list.add((begin, room_name))
+    def add(self, serve_object: ServeObject):
+        speed = serve_object.speed
+        start_time = serve_object.start_time
+        room_name = serve_object.room_name
+        self.serv_dict[room_name] = serve_object
+        self.speed_slist.add((speed, start_time, room_name))
+        self.time_slist.add((start_time, serve_object.room_name))
 
     def contains(self, room_name: str) -> bool:
         return room_name in self.serv_dict.keys()
 
-    def get_room_wind_speed(self, room_name: str) -> int:
-        wind_speed, _, _, _, _ = self.serv_dict[room_name]
-        return wind_speed
+    def get_wind_speed(self, room_name: str) -> int:
+        return self.serv_dict[room_name].speed
 
-    def update(self, service: Tuple[int, datetime, int, str, Client]):
-        _, _, _, room_name, _ = service
+    def update(self, serve_object: ServeObject):
+        speed = serve_object.speed
+        start_time = serve_object.start_time
+        room_name = serve_object.room_name
         old = self.serv_dict[room_name]
-        self.serv_dict.pop(room_name)
-        self.slist.remove(old)
-        self.slist.add(service)
-        # time_list 不需要改变
+        self.serv_dict[room_name] = serve_object
+        self.speed_slist.remove((old.speed, old.start_time, room_name))
+        self.speed_slist.add((speed, start_time, room_name))
+        # time_slist 不需要改变
 
-    def pop_by_room_name(self, room_name: str) -> Tuple[int, datetime, int, str, Client]:
-        old = self.serv_dict[room_name]
-        _, begin, _, _, _ = old
-        self.serv_dict.pop(room_name)
-        self.slist.remove(old)
-        self.time_list.remove((begin, room_name))
-        return old
+    def pop(self, oldest=False) -> ServeObject:
+        if oldest:
+            _, room_name = self.time_slist.pop(-1)
+            oldest = self.serv_dict[room_name]
+            self.serv_dict.pop(room_name)
+            self.speed_slist.remove((oldest.speed, oldest.start_time, room_name))
+            return oldest
+        else:
+            popped = self.speed_slist.pop(0)
+            self.serv_dict.pop(popped.room_name)
+            self.time_slist.remove((popped.start_time, popped.room_name))
+            return popped
 
-    def pop_oldest(self) -> Tuple[int, datetime, int, str, Client]:
-        _, room_name = self.time_list.pop(-1)
-        oldest = self.serv_dict[room_name]
-        self.serv_dict.pop(room_name)
-        self.slist.remove(oldest)
-        return oldest
-
-    def pop(self, index: int = 0) -> Tuple[int, datetime, int, str, Client]:
-        popped = self.slist.pop(index)
-        _, begin, _, room_name, _ = popped
-        self.serv_dict.pop(room_name)
-        self.time_list.remove((begin, room_name))
-        return popped
-
-    def __getitem__(self, index: int) -> Tuple[int, datetime, int, str, Client]:
-        return self.slist[index]
+    def __getitem__(self, index: int) -> ServeObject:
+        return self.serv_dict[self.speed_slist[index][2]]

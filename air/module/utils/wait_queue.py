@@ -1,9 +1,12 @@
-from datetime import datetime
-from typing import Tuple
-from copy import deepcopy
-
 from simple_websocket import Client
-from sortedcontainers import SortedList
+
+
+class WaitObject:
+
+    def __init__(self, speed: int, room_name: str, ws: Client) -> None:
+        self.speed = speed
+        self.room_name = room_name
+        self.ws = ws
 
 
 class WaitQueue:
@@ -16,41 +19,30 @@ class WaitQueue:
         此外等待服务时长越小, 说明等待结束时间戳越早, 所以我们直接存储等待结束时间戳
 
     最终存储的信息为
-        (结束等待时间戳, 风速, 房间号, WebSocket)
+        (风速, 房间号, WebSocket)
     """
 
     def __init__(self):
-        self.slist = SortedList()
+        self.queue = []
         self.wait_dict = {}
 
-    def add(self, wait_service: Tuple[datetime, int, str, Client]):
-        _, _, room_name, _ = wait_service
-        self.slist.add(wait_service)
-        self.wait_dict[room_name] = wait_service
+    def add(self, wait_object: WaitObject):
+        self.queue.append(wait_object)
+        self.wait_dict[wait_object.room_name] = wait_object
 
-    def pop(self, index: int = 0) -> Tuple[datetime, int, str, Client]:
-        popped = self.slist.pop(index)
-        _, _, room_name, _ = popped
-        self.wait_dict.pop(room_name)
+    def pop(self, index: int = 0) -> WaitObject:
+        popped = self.queue.pop(index)
+        self.wait_dict.pop(popped.room_name)
         return popped
 
     def empty(self) -> bool:
-        return len(self.slist) == 0
+        return len(self.queue) == 0
 
     def contains(self, room_name: str) -> bool:
         return room_name in self.wait_dict.keys()
 
-    def update_wind_speed(self, room_name: str, wind_speed: int):
-        old = deepcopy(self.wait_dict[room_name])
-        old[1] = wind_speed
-        self.update(old)
+    def get_wind_speed(self, room_name: str) -> int:
+        return self.wait_dict[room_name].speed
 
-    def update(self, wait_service: Tuple[datetime, int, str, Client]):
-        _, _, room_name, _ = wait_service
-        old = self.wait_dict[room_name]
-        self.slist.remove(old)
-        self.slist.add(wait_service)
-        self.wait_dict[room_name] = wait_service
-
-    def __getitem__(self, index: int) -> Tuple[datetime, int, str, Client]:
-        return self.slist[index]
+    def update_wind_speed(self, room_name: str, speed: int):
+        self.wait_dict[room_name].speed = speed

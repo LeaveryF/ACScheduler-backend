@@ -1,20 +1,14 @@
 from flask import current_app, Blueprint
 from flask_sock import Sock
 from simple_websocket import Client
-from queue import Queue
 from json import loads
-from .module import sched
-from .module.serve.service_provider import ServiceProvider
+from .module.sched.scheduler import Scheduler
+from .module.serve.request import RequestFactory
 
 bp = Blueprint("websocket", __name__, url_prefix="/websocket")
 sock = Sock(current_app)
 
-# schedule
-queue = Queue()
-
-service_provider = ServiceProvider()
-scheduler = sched.Scheduler(queue, service_provider)
-scheduler.daemon = True
+scheduler = Scheduler(daemon=True)
 scheduler.start()
 
 
@@ -30,4 +24,6 @@ def dispatch(ws: Client, room_number: int):
         message = ws.receive()
         message = loads(message)
         message["room_name"] = str(room_number)  # 房间号和房间名相同
-        queue.put((message, ws))
+        request = RequestFactory.create_request(message=message, ws=ws)
+        scheduler.queue.put(request)
+        scheduler.sema.release()
