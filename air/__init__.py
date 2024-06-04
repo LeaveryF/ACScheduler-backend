@@ -1,8 +1,8 @@
 import os
 
 from flask import Flask, render_template
-from air.db import db
-from air.seed_data import seed_data
+from .db import db
+from .seed_data import seed_data
 
 
 def create_app(test_config=None):

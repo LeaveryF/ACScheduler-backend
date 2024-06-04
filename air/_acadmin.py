@@ -2,8 +2,8 @@ from flask import (
     Blueprint,
     render_template
 )
-from air.auth import acadmin_required
-from air.db import Room
+from .auth import acadmin_required
+from .db import Room
 
 
 bp = Blueprint("acadmin", __name__, url_prefix="/acadmin")

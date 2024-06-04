@@ -6,7 +6,7 @@ from ..serve.request import Request
 from ..utils.wait_queue import WaitQueue, WaitObject
 from ..utils.serve_queue import ServeQueue, ServeObject
 from ..utils.format_transformer import FormatTransformer
-from ..serve.request import RequestFactory
+from ..serve.request_factory import RequestFactory
 
 
 class Scheduler(threading.Thread):

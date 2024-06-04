@@ -3,7 +3,7 @@ from flask_sock import Sock
 from simple_websocket import Client
 from json import loads
 from .module.sched.scheduler import Scheduler
-from .module.serve.request import RequestFactory
+from .module.serve.request_factory import RequestFactory
 
 bp = Blueprint("websocket", __name__, url_prefix="/websocket")
 sock = Sock(current_app)
