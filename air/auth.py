@@ -13,7 +13,7 @@ from flask import (
 )
 from werkzeug.security import check_password_hash
 
-from air.db import User
+from .db import User
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 

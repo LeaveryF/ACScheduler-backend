@@ -1,4 +1,4 @@
-from air.db import db, User, Room
+from .db import db, User, Room
 from werkzeug.security import generate_password_hash
 
 
