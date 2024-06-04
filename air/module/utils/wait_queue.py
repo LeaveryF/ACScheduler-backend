@@ -3,9 +3,9 @@ from simple_websocket import Client
 
 class WaitObject:
 
-    def __init__(self, speed: int, room_name: str, ws: Client) -> None:
+    def __init__(self, speed: int, room_number: str, ws: Client) -> None:
         self.speed = speed
-        self.room_name = room_name
+        self.room_number = room_number
         self.ws = ws
 
 
@@ -28,21 +28,21 @@ class WaitQueue:
 
     def add(self, wait_object: WaitObject):
         self.queue.append(wait_object)
-        self.wait_dict[wait_object.room_name] = wait_object
+        self.wait_dict[wait_object.room_number] = wait_object
 
     def pop(self, index: int = 0) -> WaitObject:
         popped = self.queue.pop(index)
-        self.wait_dict.pop(popped.room_name)
+        self.wait_dict.pop(popped.room_number)
         return popped
 
     def empty(self) -> bool:
         return len(self.queue) == 0
 
-    def contains(self, room_name: str) -> bool:
-        return room_name in self.wait_dict.keys()
+    def contains(self, room_number: str) -> bool:
+        return room_number in self.wait_dict.keys()
 
-    def get_wind_speed(self, room_name: str) -> int:
-        return self.wait_dict[room_name].speed
+    def get_wind_speed(self, room_number: str) -> int:
+        return self.wait_dict[room_number].speed
 
-    def update_wind_speed(self, room_name: str, speed: int):
-        self.wait_dict[room_name].speed = speed
+    def update_wind_speed(self, room_number: str, speed: int):
+        self.wait_dict[room_number].speed = speed

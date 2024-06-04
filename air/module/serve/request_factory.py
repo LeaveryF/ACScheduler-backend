@@ -25,7 +25,7 @@ class RequestFactory:
             dummy_message = {
                 "type": "SwitchPower",
                 "is_ac_power_on": False,
-                "room_name": serve_object.room_name,
+                "room_number": serve_object.room_number,
             }
             ws = serve_object.ws
             return Request(dummy_message, ws)

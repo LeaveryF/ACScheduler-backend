@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Hotel Manage{% endblock %}</h1>
+{% endblock %}
+
+
+{% block content %}
+<div class="manager-content">
+  <div class="dashboard">
+    <div class="card">
+      <h2>酒店收入状况统计</h2>
+      <div id="income-chart"></div>
+    </div>
+    <div class="card">
+      <h2>酒店收入来源统计</h2>
+      <div id="income-pie-chart"></div>
+    </div>
+  </div>
+  <div class="admin-panel">
+    <h2>入住信息一览</h2>
+    <div class="filters">
+      <button id="search-button" onclick="filterTable()">过滤</button>
+      <input type="text" id="search-input" placeholder="Search">
+      <div class="filter-group">
+        <label for="start-date">起始日期:</label>
+        <input type="date" id="start-date">
+      </div>
+      <div class="filter-group">
+        <label for="end-date">结束日期:</label>
+        <input type="date" id="end-date">
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table id="checkin-info-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>入住客户</th>
+            <th>入住房间</th>
+            <th>入住时间</th>
+            <th>是否退房</th>
+          </tr>
+        </thead>
+          <tbody id="checkin-tbody">
+            {% for checkin_history in checkin_histories %}
+              <tr>
+                <td>{{ checkin_history.id }}</td>
+                <td>{{ checkin_history.customer_name }}</td>
+                <td>{{ checkin_history.room_number }}</td>
+                <td>{{ checkin_history.check_in_time }}</td>
+                <td>
+                  {% if checkin_history.is_checked_out %}
+                    <span>✅</span>
+                  {% else %}
+                    <span>❌</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if showpopup %}
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="popup">
+    {% if popupmsg %}
+      <h2>{{ popupmsg }}</h2>
+    {% else %}
+      <h2>账单</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>住房费用</th>
+            <th>空调费用</th>
+            <th>总费用</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ room_cost }} 元</td>
+            <td>{{ ac_cost }} 元</td>
+            <td>{{ total_cost }} 元</td>
+          </tr>
+      </table>
+      <h2>空调详单</h2>
+      <div class="bill-entries-table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>开始时间</th>
+              <th>结束时间</th>
+              <th>风速</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for bill_entry in bill_entries %}
+            <tr>
+              <td>{{ bill_entry.start_time }}</td>
+              <td>
+              {% if bill_entry.end_time %}
+                {{ bill_entry.end_time }}
+              {% else %}
+                -
+              {% endif %}
+              </td>
+              <td>{{ bill_entry.speed }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+      <button onclick="closePopup()">关闭</button>
+    </div>
+  {% endif %}
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      {% if income_chart_json %}
+        var incomeChart = {{ income_chart_json | safe }};
+        Plotly.plot('income-chart', incomeChart, {});
+      {% endif %}
+
+      {% if income_pie_chart_json %}
+        var incomePieChart = {{ income_pie_chart_json | safe }};
+        Plotly.plot('income-pie-chart', incomePieChart, {});
+      {% endif %}
+    });
+
+  </script>
+  <script>
+    const tableBody = document.getElementById('checkin-tbody');
+
+    tableBody.querySelectorAll('tr').forEach(row => {
+        row.addEventListener('click', (event) => {
+            event.preventDefault();
+            const id = row.querySelector('td:first-child').textContent;
+            const newUrl = `report?id=${id}`;
+            window.location.href = newUrl;
+        });
+    });
+  </script>
+  <script>
+    function closePopup() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('popup').style.display = 'none';
+    }
+  </script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</div>
+{% endblock %}
