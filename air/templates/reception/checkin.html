@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Hotel Check-in{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+  <div class="checkin-form">
+
+    <h2>顾客信息</h2>
+
+    <form action="/reception/checkin" method="post">
+
+      <label for="guest-name">顾客姓名</label>
+      <input type="text" name="guest-name" id="guest-name" placeholder="输入顾客姓名" required>
+
+      <label for="guest-gender">性别</label>
+      <select name="guest-gender" id="guest-gender">
+        <option value="男">男</option>
+        <option value="女">女</option>
+        <option value="其他">其他</option>
+      </select>
+
+      <label for="guest-id">身份证号</label>
+      <input type="text" name="guest-id" id="guest-id" placeholder="输入身份证号" required>
+
+      <label for="contact-number">联系电话</label>
+      <input type="text" name="contact-number" id="contact-number" placeholder="输入联系电话" required>
+
+      <!-- 
+        <label for="guest-photo">上传顾客照片</label>
+        <input type="file" name="guest-photo" id="guest-photo" accept="image/*">
+      -->
+
+      <label for="room-number">房间</label>
+      <select name="room-number" id="room-number">
+        {% if rooms %}
+          {% for room in rooms %}
+            <option value="{{ room.room_number }}">{{ room.room_number }} {{ room.room_type }}</option>
+          {% endfor %}
+        {% else %}
+          <option value="0">没有可用房间</option>
+        {% endif %}
+      </select>
+
+      <label for="checkin-date">入住时间</label>
+      <input type="datetime-local" name="checkin-date" id="checkin-date" required>
+
+      <label for="checkout-date">退房时间</label>
+      <input type="datetime-local" name="checkout-date" id="checkout-date" required>
+
+      <div class="form-buttons">
+        <button type="submit">办理入住</button>
+        <button type="button" onclick="window.location.href = 'home';">取消</button>
+      </div>
+    </form>
+  </div>
+
+  {% if checkinOk %}
+  <script>
+    alert("入住成功！");
+  </script>
+  {% endif %}
+
+</div>
+{% endblock %}

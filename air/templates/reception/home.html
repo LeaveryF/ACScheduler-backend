@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Reception{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <button onclick="window.location.href = 'checkin';">
+    <img class="button-icon" src="{{ url_for('static', filename='checkin.png') }}"></img>
+    <span>checkin</span>
+  </button>
+  <button onclick="window.location.href = 'checkout';">
+    <img class="button-icon" src="{{ url_for('static', filename='checkout.png') }}"></img>
+    <span>checkout</span>
+  </button>
+</div>
+{% endblock %}

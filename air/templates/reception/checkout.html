@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Check Out{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+  <form id="checkout-form" action="/reception/checkout" method="post">
+    <div class="form-group">
+      <label for="guest-name">退房人姓名</label>
+      <input type="text" id="guest-name" name="guest-name" required />
+    </div>
+    <div class="form-group">
+      <label for="id-number">身份证号</label>
+      <input type="text" id="id-number" name="id-number" required />
+    </div>
+    <div class="form-buttons">
+      <button type="submit" id="submit-button">退房</button>
+      <button type="button" onclick="history.back();">取消</button>
+    </div>
+  </form>
+
+
+  {% if showpopup %}
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="popup">
+    {% if popupmsg %}
+      <h2>{{ popupmsg }}</h2>
+    {% else %}
+      <h2>账单</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>住房费用</th>
+            <th>空调费用</th>
+            <th>总费用</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ room_cost }} 元</td>
+            <td>{{ ac_cost }} 元</td>
+            <td>{{ total_cost }} 元</td>
+          </tr>
+      </table>
+      <h2>空调详单</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>风速</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bill_entry in bill_entries %}
+          <tr>
+            <td>{{ bill_entry.start_time }}</td>
+            <td>{{ bill_entry.end_time }}</td>
+            <td>{{ bill_entry.speed }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+      <button onclick="closePopup()">关闭</button>
+    </div>
+  {% endif %}
+
+</div>
+
+<script>
+  function closePopup() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('popup').style.display = 'none';
+  }
+</script>
+{% endblock %}
