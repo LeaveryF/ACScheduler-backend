@@ -1,12 +1,24 @@
+from threading import Timer
 from simple_websocket import Client
+from sortedcontainers import SortedList
+from datetime import datetime
+from typing import Optional
 
 
 class WaitObject:
 
-    def __init__(self, speed: int, room_name: str, ws: Client) -> None:
+    def __init__(
+        self, 
+        speed: int, 
+        room_name: str, 
+        ws: Client, 
+        start_time: datetime
+    ) -> None:
         self.speed = speed
         self.room_name = room_name
         self.ws = ws
+        self.timer = None
+        self.start_time = start_time
 
 
 class WaitQueue:
@@ -25,14 +37,31 @@ class WaitQueue:
     def __init__(self):
         self.queue = []
         self.wait_dict = {}
+        self.time_slist = SortedList()
 
     def add(self, wait_object: WaitObject):
         self.queue.append(wait_object)
         self.wait_dict[wait_object.room_name] = wait_object
+        room_name = wait_object.room_name
+        start_time = wait_object.start_time
+        self.time_slist.add((start_time, room_name))
 
-    def pop(self, index: int = 0) -> WaitObject:
+    def pop(self, index: int = 0, room_name: Optional[str] = None, oldest: bool = False) -> WaitObject:
+        if oldest:
+            _, room_name = self.time_slist.pop(0)
+            wait_object = self.wait_dict[room_name]
+            self.queue.remove(wait_object)
+            wait_object.timer.cancel()
+            self.wait_dict.pop(wait_object.room_name)
+            return wait_object
+        
+        if room_name is not None:
+            wait_object = self.wait_dict[room_name]
+            index = self.queue.index(wait_object)
         popped = self.queue.pop(index)
+        popped.timer.cancel()
         self.wait_dict.pop(popped.room_name)
+        self.time_slist.remove((popped.start_time, popped.room_name))
         return popped
 
     def empty(self) -> bool:

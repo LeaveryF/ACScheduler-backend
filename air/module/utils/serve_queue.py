@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Optional
 from simple_websocket import Client
 from sortedcontainers import SortedList
 
@@ -59,7 +59,7 @@ class ServeQueue:
         room_name = serve_object.room_name
         self.serv_dict[room_name] = serve_object
         self.speed_slist.add((speed, start_time, room_name))
-        self.time_slist.add((start_time, serve_object.room_name))
+        self.time_slist.add((start_time, room_name))
 
     def contains(self, room_name: str) -> bool:
         return room_name in self.serv_dict.keys()
@@ -77,13 +77,20 @@ class ServeQueue:
         self.speed_slist.add((speed, start_time, room_name))
         # time_slist 不需要改变
 
-    def pop(self, oldest=False) -> ServeObject:
-        if oldest:
-            _, room_name = self.time_slist.pop(-1)
-            oldest = self.serv_dict[room_name]
+    def pop(self, oldest=False, room_name: Optional[str] = None) -> ServeObject:
+        if room_name is not None:
+            serve_object = self.serv_dict[room_name]
             self.serv_dict.pop(room_name)
-            self.speed_slist.remove((oldest.speed, oldest.start_time, room_name))
-            return oldest
+            self.speed_slist.remove((serve_object.speed, serve_object.start_time, room_name))
+            self.time_slist.remove((serve_object.start_time, serve_object.room_name))
+            return serve_object
+        
+        if oldest:
+            _, room_name = self.time_slist.pop(0)
+            serve_object = self.serv_dict[room_name]
+            self.serv_dict.pop(room_name)
+            self.speed_slist.remove((serve_object.speed, serve_object.start_time, room_name))
+            return serve_object
         else:
             popped = self.speed_slist.pop(0)
             self.serv_dict.pop(popped.room_name)

@@ -26,4 +26,3 @@ def dispatch(ws: Client, room_number: int):
         message["room_name"] = str(room_number)  # 房间号和房间名相同
         request = RequestFactory.create_request(message=message, ws=ws)
         scheduler.queue.put(request)
-        scheduler.sema.release()

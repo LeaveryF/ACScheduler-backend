@@ -42,11 +42,13 @@ class QueueObjectFactory:
             speed = FormatTransformer.speed(speed=request.target_speed)
             room_name = request.room_name
             ws = request.ws
-            return WaitObject(speed, room_name, ws)
+            start_time = datetime.now()
+            return WaitObject(speed, room_name, ws, start_time)
         elif serve_object is not None:
             speed = serve_object.speed
             room_name = serve_object.room_name
             ws = serve_object.ws
-            return WaitObject(speed, room_name, ws)
+            start_time = datetime.now()
+            return WaitObject(speed, room_name, ws, start_time)
         else:
             raise RuntimeError("Unimplemented")

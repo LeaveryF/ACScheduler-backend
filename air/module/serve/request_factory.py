@@ -16,6 +16,7 @@ class RequestFactory:
             ws: Client = None,
             serve_object: ServeObject = None,
             wait_object: WaitObject = None,
+            request: Request = None,
     ) -> Request:
         if message is not None and ws is not None:
             return Request(message, ws)
@@ -23,8 +24,7 @@ class RequestFactory:
         elif serve_object is not None:
             # 根据服务对象生成关机请求 (dummy)
             dummy_message = {
-                "type": "SwitchPower",
-                "is_ac_power_on": False,
+                "type": "DummyPowerOff",
                 "room_name": serve_object.room_name,
             }
             ws = serve_object.ws
@@ -32,13 +32,18 @@ class RequestFactory:
 
         elif wait_object is not None:
             dummy_message = {
-                "type": "Adjust",
+                "type": "Serve",  # update: "Serve" type 区分于 "Adjust"
                 "target_mode": "Cold",  # TODO: 目标模式需要记录吗？
                 "target_temp": 22,  # TODO: 目标温度需要记录吗？
                 "target_speed": FormatTransformer.speed(speed=wait_object.speed),
+                "room_name": serve_object.room_name,
             }
             ws = wait_object.ws
             return Request(dummy_message, ws)
+
+        elif request is not None:
+            request['type'] = "Serve"
+            return request
 
         else:
             raise RuntimeError("Unimplemented")
