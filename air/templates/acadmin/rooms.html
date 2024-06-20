@@ -5,23 +5,31 @@
 {% endblock %}
 
 {% block content %}
-    <h2> 房间信息 </h2>
-
-    <div class="room">
+    <div class="rooms-info">
+        <h2> 房间信息 </h2>
+    
         <table>
-            <tr>
-                <th>房间名</th>
-                <th>风速</th>
-                <th>模式</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>房间号</th>
+                    <th>当前温度</th>
+                    <th>目标温度</th>
+                    <th>风速</th>
+                    <th>模式</th>
+                </tr>
+            </thead>
 
-        {% for room in rooms %}
-            <tr>
-                <td>{{ room.room_name }}</td>
-                <td>{{ room.room_type }}</td>
-                <td>{{ room.current_temp }}</td>
-            </tr>
-        {% endfor %}
+            <tbody>
+                {% for room in rooms %}
+                <tr>
+                    <td>{{ room.room_number }}</td>
+                    <td>{{ room.current_temp }}</td>
+                    <td>{{ room.target_temp }}</td>
+                    <td>{{ room.ac_speed }}</td>
+                    <td>{{ room.ac_mode }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 {% endblock %}

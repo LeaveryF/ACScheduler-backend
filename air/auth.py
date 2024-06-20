@@ -38,7 +38,7 @@ def login():
             elif username == "acadmin":
                 return redirect(url_for("acadmin.rooms"))
             elif username == "receptionist":
-                return redirect(url_for("reception.getinvoice"))
+                return redirect(url_for("reception.home"))
             return redirect(url_for("index"))
 
         flash(error)

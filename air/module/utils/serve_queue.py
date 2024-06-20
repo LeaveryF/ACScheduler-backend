@@ -14,13 +14,13 @@ class ServeObject:
         speed: int,
         start_time: datetime,
         service_id: int,
-        room_name: str,
+        room_number: str,
         ws: Client,
     ) -> None:
         self.speed = speed
         self.start_time = start_time
         self.service_id = service_id
-        self.room_name = room_name
+        self.room_number = room_number
         self.ws = ws
 
 
@@ -56,25 +56,25 @@ class ServeQueue:
     def add(self, serve_object: ServeObject):
         speed = serve_object.speed
         start_time = serve_object.start_time
-        room_name = serve_object.room_name
-        self.serv_dict[room_name] = serve_object
-        self.speed_slist.add((speed, start_time, room_name))
-        self.time_slist.add((start_time, room_name))
+        room_number = serve_object.room_number
+        self.serv_dict[room_number] = serve_object
+        self.speed_slist.add((speed, start_time, room_number))
+        self.time_slist.add((start_time, serve_object.room_number))
 
-    def contains(self, room_name: str) -> bool:
-        return room_name in self.serv_dict.keys()
+    def contains(self, room_number: str) -> bool:
+        return room_number in self.serv_dict.keys()
 
-    def get_wind_speed(self, room_name: str) -> int:
-        return self.serv_dict[room_name].speed
+    def get_wind_speed(self, room_number: str) -> int:
+        return self.serv_dict[room_number].speed
 
     def update(self, serve_object: ServeObject):
         speed = serve_object.speed
         start_time = serve_object.start_time
-        room_name = serve_object.room_name
-        old = self.serv_dict[room_name]
-        self.serv_dict[room_name] = serve_object
-        self.speed_slist.remove((old.speed, old.start_time, room_name))
-        self.speed_slist.add((speed, start_time, room_name))
+        room_number = serve_object.room_number
+        old = self.serv_dict[room_number]
+        self.serv_dict[room_number] = serve_object
+        self.speed_slist.remove((old.speed, old.start_time, room_number))
+        self.speed_slist.add((speed, start_time, room_number))
         # time_slist 不需要改变
 
     def pop(self, oldest=False, room_name: Optional[str] = None) -> ServeObject:
@@ -86,15 +86,15 @@ class ServeQueue:
             return serve_object
         
         if oldest:
-            _, room_name = self.time_slist.pop(0)
-            serve_object = self.serv_dict[room_name]
-            self.serv_dict.pop(room_name)
-            self.speed_slist.remove((serve_object.speed, serve_object.start_time, room_name))
+            _, room_number = self.time_slist.pop(0)
+            serve_object = self.serv_dict[room_number]
+            self.serv_dict.pop(room_number)
+            self.speed_slist.remove((serve_object.speed, serve_object.start_time, room_number))
             return serve_object
         else:
             popped = self.speed_slist.pop(0)
-            self.serv_dict.pop(popped.room_name)
-            self.time_slist.remove((popped.start_time, popped.room_name))
+            self.serv_dict.pop(popped.room_number)
+            self.time_slist.remove((popped.start_time, popped.room_number))
             return popped
 
     def __getitem__(self, index: int) -> ServeObject:

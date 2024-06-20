@@ -24,8 +24,9 @@ class RequestFactory:
         elif serve_object is not None:
             # 根据服务对象生成关机请求 (dummy)
             dummy_message = {
-                "type": "DummyPowerOff",
-                "room_name": serve_object.room_name,
+                "type": "SwitchPower",
+                "is_ac_power_on": False,
+                "room_number": serve_object.room_number,
             }
             ws = serve_object.ws
             return Request(dummy_message, ws)

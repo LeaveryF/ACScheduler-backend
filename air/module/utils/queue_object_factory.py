@@ -19,17 +19,17 @@ class QueueObjectFactory:
             start_time = datetime.now()
             QueueObjectFactory.service_id_counter += 1
             service_id = QueueObjectFactory.service_id_counter
-            room_name = request.room_name
+            room_number = request.room_number
             ws = request.ws
-            return ServeObject(speed, start_time, service_id, room_name, ws)
+            return ServeObject(speed, start_time, service_id, room_number, ws)
         elif wait_object is not None:
             speed = wait_object.speed
             start_time = datetime.now()
             QueueObjectFactory.service_id_counter += 1
             service_id = QueueObjectFactory.service_id_counter
-            room_name = wait_object.room_name
+            room_number = wait_object.room_number
             ws = wait_object.ws
-            return ServeObject(speed, start_time, service_id, room_name, ws)
+            return ServeObject(speed, start_time, service_id, room_number, ws)
         else:
             raise RuntimeError("Unimplemented")
 
@@ -40,13 +40,13 @@ class QueueObjectFactory:
         """
         if request is not None:
             speed = FormatTransformer.speed(speed=request.target_speed)
-            room_name = request.room_name
+            room_number = request.room_number
             ws = request.ws
             start_time = datetime.now()
             return WaitObject(speed, room_name, ws, start_time)
         elif serve_object is not None:
             speed = serve_object.speed
-            room_name = serve_object.room_name
+            room_number = serve_object.room_number
             ws = serve_object.ws
             start_time = datetime.now()
             return WaitObject(speed, room_name, ws, start_time)

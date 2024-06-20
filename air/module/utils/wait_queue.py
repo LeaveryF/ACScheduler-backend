@@ -15,7 +15,7 @@ class WaitObject:
         start_time: datetime
     ) -> None:
         self.speed = speed
-        self.room_name = room_name
+        self.room_number = room_number
         self.ws = ws
         self.timer = None
         self.start_time = start_time
@@ -41,37 +41,37 @@ class WaitQueue:
 
     def add(self, wait_object: WaitObject):
         self.queue.append(wait_object)
-        self.wait_dict[wait_object.room_name] = wait_object
-        room_name = wait_object.room_name
+        self.wait_dict[wait_object.room_number] = wait_object
+        room_number = wait_object.room_number
         start_time = wait_object.start_time
-        self.time_slist.add((start_time, room_name))
+        self.time_slist.add((start_time, room_number))
 
-    def pop(self, index: int = 0, room_name: Optional[str] = None, oldest: bool = False) -> WaitObject:
+    def pop(self, index: int = 0, room_number: Optional[str] = None, oldest: bool = False) -> WaitObject:
         if oldest:
-            _, room_name = self.time_slist.pop(0)
-            wait_object = self.wait_dict[room_name]
+            _, room_number = self.time_slist.pop(0)
+            wait_object = self.wait_dict[room_number]
             self.queue.remove(wait_object)
             wait_object.timer.cancel()
-            self.wait_dict.pop(wait_object.room_name)
+            self.wait_dict.pop(wait_object.room_number)
             return wait_object
         
-        if room_name is not None:
-            wait_object = self.wait_dict[room_name]
+        if room_number is not None:
+            wait_object = self.wait_dict[room_number]
             index = self.queue.index(wait_object)
         popped = self.queue.pop(index)
         popped.timer.cancel()
-        self.wait_dict.pop(popped.room_name)
-        self.time_slist.remove((popped.start_time, popped.room_name))
+        self.wait_dict.pop(popped.room_number)
+        self.time_slist.remove((popped.start_time, popped.room_number))
         return popped
 
     def empty(self) -> bool:
         return len(self.queue) == 0
 
-    def contains(self, room_name: str) -> bool:
-        return room_name in self.wait_dict.keys()
+    def contains(self, room_number: str) -> bool:
+        return room_number in self.wait_dict.keys()
 
-    def get_wind_speed(self, room_name: str) -> int:
-        return self.wait_dict[room_name].speed
+    def get_wind_speed(self, room_number: str) -> int:
+        return self.wait_dict[room_number].speed
 
-    def update_wind_speed(self, room_name: str, speed: int):
-        self.wait_dict[room_name].speed = speed
+    def update_wind_speed(self, room_number: str, speed: int):
+        self.wait_dict[room_number].speed = speed

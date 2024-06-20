@@ -5,9 +5,12 @@ html {
 }
 
 body {
-    max-width: 960px;
+    width: 80%;
     margin: 0 auto;
-    background: white;
+    /* background: white; */
+    background-image: linear-gradient(to right, #f2f2f2, #e6e6e6);
+    /* 浅灰色渐变 */
+    min-height: 500px;
 }
 
 h1 {
@@ -25,10 +28,12 @@ hr {
     border-top: 1px solid lightgray;
 }
 
+/************* 导航栏 **************/
 nav {
     background: lightgray;
     display: flex;
     align-items: center;
+    min-height: 80px;
     padding: 0 0.5rem;
 }
 
@@ -56,73 +61,43 @@ header .action {
     padding: 0.5rem;
 }
 
-.content {
+/********** main-content **********/
+.main-content {
     padding: 0 1rem 1rem;
 }
 
-.content>header {
+.main-content>header {
     border-bottom: 1px solid lightgray;
     display: flex;
     align-items: flex-end;
 }
 
-.content>header h1 {
+.main-content>header h1 {
     flex: auto;
     margin: 1rem 0 0.25rem 0;
 }
 
-.flash {
-    margin: 1em 0;
-    padding: 1em;
-    background: #cae6f6;
-    border: 1px solid #377ba8;
-}
-
-.post>header {
-    display: flex;
-    align-items: flex-end;
-    font-size: 0.85em;
-}
-
-.post>header>div:first-of-type {
-    flex: auto;
-}
-
-.post>header h1 {
-    font-size: 1.5em;
+.main-content:last-child {
     margin-bottom: 0;
 }
 
-.post .about {
-    color: slategray;
-    font-style: italic;
-}
-
-.post .body {
-    white-space: pre-line;
-}
-
-.content:last-child {
-    margin-bottom: 0;
-}
-
-.content form {
+.main-content form {
     margin: 1em 0;
     display: flex;
     flex-direction: column;
 }
 
-.content label {
+.main-content label {
     font-weight: bold;
     margin-bottom: 0.5em;
 }
 
-.content input,
-.content textarea {
+.main-content input,
+.main-content textarea {
     margin-bottom: 1em;
 }
 
-.content textarea {
+.main-content textarea {
     min-height: 12em;
     resize: vertical;
 }
@@ -134,4 +109,362 @@ input.danger {
 input[type=submit] {
     align-self: start;
     min-width: 10em;
+}
+
+/*********** flash ************/
+
+.flash {
+    margin: 1em 0;
+    padding: 1em;
+    background: #cae6f6;
+    border: 1px solid #377ba8;
+}
+
+/*********** rooms-info **********/
+
+.rooms-info {
+    background-color: white;
+    padding: 20px;
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+}
+
+
+.rooms-info h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.rooms-info table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+}
+
+.rooms-info table thead {
+    background-color: #cae6f6;
+}
+
+.rooms-info table th,
+.rooms-info table td {
+    padding: 10px;
+    border: none;
+    text-align: center;
+}
+
+.rooms-info tbody tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+/********* reception **********/
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 400px;
+    padding: 0 20px;
+}
+
+.container button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 40px;
+    font-size: 18px;
+    background: none;
+    /* 移除按钮默认背景色 */
+    border: none;
+    /* 移除按钮边框 */
+    cursor: pointer;
+    position: relative;
+    /* 设置定位为相对定位，为了让图标的绝对定位相对于按钮进行定位 */
+    height: 50%;
+    width: 50%;
+}
+
+.container .button-icon {
+    width: 66%;
+    /* 设置图标的宽度 */
+    height: 66%;
+    /* 设置图标的高度 */
+    border: 2px solid black;
+    /* 添加黑色边框 */
+    border-radius: 50%;
+    /* 将图标的边框半径设置为50%，使之呈现圆形 */
+    margin-bottom: 5px;
+    /* 将图标与文字之间的间距设置为5px */
+}
+
+/******** checkin **********/
+
+.checkin-form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 0 auto;
+    margin-top: 10px;
+}
+
+.checkin-form h2 {
+    margin-top: 0;
+}
+
+.checkin-form form {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkin-form label {
+    margin: 10px 0 5px;
+}
+
+.checkin-form input[type="text"],
+.checkin-form input[type="file"],
+.checkin-form select {
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.form-buttons button {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.form-buttons button:hover {
+    background-color: #2980b9;
+}
+
+/********** checkout ***********/
+
+.checkout-container {
+    max-width: 600px;
+    margin: 50px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-container form .form-group {
+    margin-bottom: 20px;
+}
+
+.checkout-container form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.checkout-container form input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.checkout-container form button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.checkout-container .overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* 半透明黑色背景 */
+}
+
+/* 弹出框样式 */
+.checkout-container .popup {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.checkout-container .popup button {
+    max-width: 50px;
+    align-self: center;
+}
+
+.checkout-container .popup table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+}
+
+.checkout-container .popup thead {
+    background-color: #cae6f6;
+}
+
+.checkout-container .popup th,
+.checkout-container .popup td {
+    padding: 10px;
+    border: none;
+    text-align: center;
+}
+
+.checkout-container .popup tbody tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+/******** manager ********/
+
+.manager-content {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.manager-content h1 {
+    color: #2c3e50;
+}
+
+.manager-content h2 {
+    color: #2c3e50;
+    text-align: center;
+}
+
+.manager-content .dashboard {
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+}
+
+.manager-content .card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 48%;
+    margin-bottom: 20px;
+}
+
+.manager-content .admin-panel {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.manager-content .filters {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.manager-content #search-button {
+    margin-bottom: 1em;
+}
+
+.manager-content .table-wrapper {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.manager-content table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.manager-content table,
+th,
+td {
+    border: 1px solid #ddd;
+}
+
+.manager-content th,
+.manager-content td {
+    padding: 8px;
+    text-align: left;
+}
+
+.manager-content .overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* 半透明黑色背景 */
+}
+
+/* 弹出框样式 */
+.manager-content .popup {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.manager-content .popup button {
+    max-width: 50px;
+    align-self: center;
+}
+
+.manager-content .popup table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+}
+
+.manager-content .popup thead {
+    background-color: #cae6f6;
+}
+
+.manager-content .popup th,
+.manager-content .popup td {
+    padding: 10px;
+    border: none;
+    text-align: center;
+}
+
+.manager-content .popup tbody tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+.bill-entries-table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
 }

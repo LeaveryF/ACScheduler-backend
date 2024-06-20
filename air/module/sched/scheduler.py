@@ -104,22 +104,24 @@ class Scheduler(Thread):
     # 2. 调节请求
     def handle_adjust(self, request: Request):
 
-        room_name = request.room_name
+        room_number = request.room_number
         target_wind_speed = FormatTransformer.speed(request)  # 获取目标风速
 
         # 在等待队列中
-        if self.wait_queue.contains(room_name):
-            old_wind_speed = self.wait_queue.get_wind_speed(room_name)
+        if self.wait_queue.contains(room_number):
+            old_wind_speed = self.wait_queue.get_wind_speed(room_number)
 
             # 风速不同, 进入调度
             if old_wind_speed != target_wind_speed:
                 self.schedule(request)
 
-            # 风速相同, 只是调整温度, 更新目标温度即可, 不用调度, 直接 serve
+            # 风速不同, 更新等待队列中的风速
+            self.wait_queue.update_wind_speed(room_number, target_wind_speed)
+            return
 
         # 在服务队列中
-        elif self.serve_queue.contains(room_name):
-            old_wind_speed = self.serve_queue.get_wind_speed(room_name)
+        if self.serve_queue.contains(room_number):
+            old_wind_speed = self.serve_queue.get_wind_speed(room_number)
 
             # 风速不同, 进入调度
             if old_wind_speed != target_wind_speed:
@@ -155,7 +157,7 @@ class Scheduler(Thread):
             wait_object = self.wait_queue.pop()
 
             # 如果服务队列中已经有了这个房间的服务对象, 那么进行更新
-            # if self.serve_queue.contains(wait_object.room_name):
+            # if self.serve_queue.contains(wait_object.room_number):
             #     self._update_serv_object(wait_object=wait_object)
             #     return
 
