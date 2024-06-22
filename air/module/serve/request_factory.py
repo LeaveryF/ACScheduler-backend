@@ -24,7 +24,7 @@ class RequestFactory:
         elif serve_object is not None:
             # 根据服务对象生成关机请求 (dummy)
             dummy_message = {
-                "type": "SwitchPower",
+                "type": "DummyPowerOff",
                 "is_ac_power_on": False,
                 "room_number": serve_object.room_number,
             }
@@ -34,16 +34,16 @@ class RequestFactory:
         elif wait_object is not None:
             dummy_message = {
                 "type": "Serve",  # update: "Serve" type 区分于 "Adjust"
-                "target_mode": "Cold",  # TODO: 目标模式需要记录吗？
-                "target_temp": 22,  # TODO: 目标温度需要记录吗？
+                "target_mode": wait_object.mode,
+                "target_temp": wait_object.temp,
                 "target_speed": FormatTransformer.speed(speed=wait_object.speed),
-                "room_name": serve_object.room_name,
+                "room_number": wait_object.room_number,
             }
             ws = wait_object.ws
             return Request(dummy_message, ws)
 
         elif request is not None:
-            request['type'] = "Serve"
+            request.type = "Serve"
             return request
 
         else:

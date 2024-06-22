@@ -10,15 +10,20 @@ class WaitObject:
     def __init__(
         self, 
         speed: int, 
-        room_name: str, 
+        room_number: str, 
         ws: Client, 
-        start_time: datetime
+        start_time: datetime,
+        temp: int,
+        mode: str
     ) -> None:
         self.speed = speed
+        self.temp = temp
         self.room_number = room_number
         self.ws = ws
         self.timer = None
         self.start_time = start_time
+        self.temp = temp
+        self.mode = mode
 
 
 class WaitQueue:

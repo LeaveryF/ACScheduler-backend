@@ -16,12 +16,16 @@ class ServeObject:
         service_id: int,
         room_number: str,
         ws: Client,
+        temp: int,
+        mode: str
     ) -> None:
         self.speed = speed
         self.start_time = start_time
         self.service_id = service_id
         self.room_number = room_number
         self.ws = ws
+        self.temp = temp
+        self.mode = mode
 
 
 class ServeQueue:
@@ -77,12 +81,12 @@ class ServeQueue:
         self.speed_slist.add((speed, start_time, room_number))
         # time_slist 不需要改变
 
-    def pop(self, oldest=False, room_name: Optional[str] = None) -> ServeObject:
-        if room_name is not None:
-            serve_object = self.serv_dict[room_name]
-            self.serv_dict.pop(room_name)
-            self.speed_slist.remove((serve_object.speed, serve_object.start_time, room_name))
-            self.time_slist.remove((serve_object.start_time, serve_object.room_name))
+    def pop(self, oldest=False, room_number: Optional[str] = None) -> ServeObject:
+        if room_number is not None:
+            serve_object = self.serv_dict[room_number]
+            self.serv_dict.pop(room_number)
+            self.speed_slist.remove((serve_object.speed, serve_object.start_time, room_number))
+            self.time_slist.remove((serve_object.start_time, room_number))
             return serve_object
         
         if oldest:
@@ -92,10 +96,11 @@ class ServeQueue:
             self.speed_slist.remove((serve_object.speed, serve_object.start_time, room_number))
             return serve_object
         else:
-            popped = self.speed_slist.pop(0)
-            self.serv_dict.pop(popped.room_number)
-            self.time_slist.remove((popped.start_time, popped.room_number))
-            return popped
+            _, start_time, room_number = self.speed_slist.pop(0)
+            serve_object = self.serv_dict[room_number]
+            self.serv_dict.pop(room_number)
+            self.time_slist.remove((start_time, room_number))
+            return serve_object
 
     def __getitem__(self, index: int) -> ServeObject:
         return self.serv_dict[self.speed_slist[index][2]]

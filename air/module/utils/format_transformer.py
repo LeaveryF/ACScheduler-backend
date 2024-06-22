@@ -3,9 +3,9 @@ from ..serve.request import Request
 
 
 class FormatTransformer:
-    _str_to_int = {"Small": 1, "Medium": 2, "Large": 3}
+    _str_to_int = {"Low": 1, "Medium": 2, "High": 3}
 
-    _int_to_str = {1: "Small", 2: "Medium", 3: "Large"}
+    _int_to_str = {1: "Low", 2: "Medium", 3: "High"}
 
     @staticmethod
     def speed(

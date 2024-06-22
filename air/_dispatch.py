@@ -1,16 +1,19 @@
-from flask import current_app, Blueprint
+from flask import Blueprint
 from flask_sock import Sock
 from simple_websocket import Client
 from json import loads
 from .module.sched.scheduler import Scheduler
 from .module.serve.request_factory import RequestFactory
 
+
 bp = Blueprint("websocket", __name__, url_prefix="/websocket")
-sock = Sock(current_app)
+sock = Sock()
+scheduler = None
 
-scheduler = Scheduler(daemon=True)
-scheduler.start()
-
+def init_scheduler(app):
+    global scheduler
+    scheduler = Scheduler(daemon=True, app=app)
+    scheduler.start()
 
 @sock.route('/<int:room_number>', bp=bp)
 def dispatch(ws: Client, room_number: int):

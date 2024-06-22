@@ -51,6 +51,8 @@ def create_app(test_config=None):
     app.register_blueprint(_reception.bp)
 
     from . import _dispatch
+    _dispatch.sock.init_app(app)
+    _dispatch.init_scheduler(app)
     app.register_blueprint(_dispatch.bp)
 
     return app

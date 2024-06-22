@@ -1,5 +1,6 @@
 from threading import Thread, Timer, Lock
 from queue import Queue
+from datetime import datetime
 
 from ..utils.queue_object_factory import QueueObjectFactory
 from ..serve.service_provider import ServiceProvider
@@ -12,35 +13,35 @@ from ..serve.request_factory import RequestFactory
 
 class Scheduler(Thread):
 
-    def __init__(self, capacity: int = 10, daemon: bool = True):
+    def __init__(self, capacity: int = 3, daemon: bool = True, app = None, wait_time = 30):
         super().__init__(daemon=daemon)
         self.mutex = Lock()
         self.queue = Queue()
         self.serve_queue = ServeQueue(capacity)
         self.wait_queue = WaitQueue()
-        self.service_provider = ServiceProvider(daemon=True)
-        self.service_provider.start()
+        self.service_provider = ServiceProvider(daemon=True, app=app)
+        self.app = app
+        self.wait_time = wait_time
 
     def run(self):
+        self.service_provider.start()
         while True:
-            with self.mutex:
-                request = self.queue.get()
-
-                # 1. 开关机请求
-                if request.type == "SwitchPower":
-                    self.handle_switch_power(request)
-                    
-                # 2. 调节请求
-                elif request.type == "Adjust":
-                    self.handle_adjust(request)
-                    
-                # 3. 温度达到请求
-                elif request.type == "TemperatureReached":
-                    self.handle_temperature_reached(request)
-                    
-                # 其它请求
-                else:
-                    self.service_provider.queue.put(request)
+            request = self.queue.get()
+            
+            # 所有请求转发给 service_provider
+            self.service_provider.queue.put(request)
+            
+            # 1. 开关机请求
+            if request.type == "SwitchPower":
+                self.handle_switch_power(request)
+                
+            # 2. 调节请求
+            elif request.type == "Adjust":
+                self.handle_adjust(request)
+                
+            # 3. 温度达到请求
+            elif request.type == "TemperatureReached":
+                self.handle_temperature_reached(request)
 
     # 功能：调度
     # 调用者：
@@ -52,18 +53,18 @@ class Scheduler(Thread):
     # _enqueue_serv_object()
     def schedule(self, request: Request):
         
-        room_name = request.room_name
+        room_number = request.room_number
         target_wind_speed = FormatTransformer.speed(request)
 
         # 如果在等待队列中 先清除 重新调度 按调度规则调度
-        if self.wait_queue.contains(room_name):
-            self.wait_queue.pop(room_name=room_name)
+        if self.wait_queue.contains(room_number):
+            self.wait_queue.pop(room_number=room_number)
 
         # * 如果在服务队列中 先清除 重新调度 调度等待时间最长的
         # 直接更新风速, 意味着只要被服务, 除非被抢占或达到目标, 否则可以随意改变风速
-        if self.serve_queue.contains(room_name):
+        if self.serve_queue.contains(room_number):
             self._update_serv_object(request=request)
-            # self.serve_queue.pop(room_name=room_name)
+            # self.serve_queue.pop(room_number=room_number)
             # self._enqueue_wait_object(request=request)
             # self.handle_cancel()
             return
@@ -84,26 +85,26 @@ class Scheduler(Thread):
 
     # 1. 开关机请求
     def handle_switch_power(self, request: Request):
+        print(f"... {datetime.now()} scheduler: handle_switch_power from {request.room_number}")
         
-        room_name = request.room_name
+        room_number = request.room_number
         
         # 如果是关机请求
         if request.is_ac_power_on == False:
             # 如果在等待队列中 清除
-            if self.wait_queue.contains(room_name):
-                self.wait_queue.pop(room_name=room_name)
+            if self.wait_queue.contains(room_number):
+                self.wait_queue.pop(room_number=room_number)
 
             # 如果在服务队列中 清除 调度
-            if self.serve_queue.contains(room_name):
-                self.serve_queue.pop(room_name=room_name)
+            if self.serve_queue.contains(room_number):
+                popped_serve_object = self.serve_queue.pop(room_number=room_number)
+                self._cancel_service(serve_object=popped_serve_object)
                 self.handle_cancel()
-        
-        # 所有请求转发给 service_provider
-        self.service_provider.queue.put(request)
 
     # 2. 调节请求
     def handle_adjust(self, request: Request):
-
+        print(f"... {datetime.now()} scheduler: handle_adjust from {request.room_number}")
+        
         room_number = request.room_number
         target_wind_speed = FormatTransformer.speed(request)  # 获取目标风速
 
@@ -111,42 +112,34 @@ class Scheduler(Thread):
         if self.wait_queue.contains(room_number):
             old_wind_speed = self.wait_queue.get_wind_speed(room_number)
 
+            # 风速相同, 只是调整温度, 更新目标温度即可
+            if old_wind_speed == target_wind_speed:
+                return
+            
             # 风速不同, 进入调度
-            if old_wind_speed != target_wind_speed:
-                self.schedule(request)
-
-            # 风速不同, 更新等待队列中的风速
-            self.wait_queue.update_wind_speed(room_number, target_wind_speed)
-            return
 
         # 在服务队列中
         if self.serve_queue.contains(room_number):
             old_wind_speed = self.serve_queue.get_wind_speed(room_number)
 
-            # 风速不同, 进入调度
-            if old_wind_speed != target_wind_speed:
-                self.schedule(request)
+           # 风速相同, 只是调整温度, 更新目标温度即可
+            if old_wind_speed == target_wind_speed:
+                return
 
-            # 风速相同, 只是调整温度, 更新目标温度即可
+            # 风速不同, 进入调度
 
         # 不在队列中, 或者在队列中但是风速不同
-        else:
-            self.schedule()
-
-        # 所有请求转发给 service_provider 因为目标风速应总是客户端的目标风速 即使还没被调度
-        self.service_provider.queue.put(request)
+        self.schedule(request)
 
     # 3. 温度达到请求
     def handle_temperature_reached(self, request: Request):
+        print(f"... {datetime.now()} scheduler: handle_temperature_reached from {request.room_number}")
         
-        room_name = request.room_name
+        room_number = request.room_number
         
         # 清除服务对象
-        self.serve_queue.pop(room_name=room_name)
+        self.serve_queue.pop(room_number=room_number)
         self.handle_cancel()
-        
-        # 所有请求转发给 service_provider
-        self.service_provider.queue.put(request)
 
     # 功能：处理等待对象s秒时间到达
     # 调用：
@@ -177,6 +170,8 @@ class Scheduler(Thread):
 
             # 进入服务队列
             self._enqueue_serv_object(wait_object=wait_object)
+            
+            wait_object.timer.cancel()
 
     # 功能：处理中途需要调度的情况 删除最早的等待对象 提供服务
     # 调用者：
@@ -189,8 +184,9 @@ class Scheduler(Thread):
     def handle_cancel(self):
 
         # 找到等待时长最大的 即最早的等待对象 进行调度 进入服务队列
-        wait_object = self.wait_queue.pop(oldest=True)  # todo
-        self._enqueue_serv_object(wait_object=wait_object)
+        if not self.wait_queue.empty():
+            wait_object = self.wait_queue.pop(oldest=True)
+            self._enqueue_serv_object(wait_object=wait_object)
 
     # 功能：发送关机请求 (dummy request)
     # 调用者：
@@ -198,9 +194,7 @@ class Scheduler(Thread):
     # 后置条件：
     # service_provider 获得 DummyPowerOff 请求
     def _cancel_service(self, serve_object: ServeObject):
-        dummy_poweroff_request = RequestFactory.create_request(
-            serve_object=serve_object
-        )
+        dummy_poweroff_request = RequestFactory.create_request(serve_object=serve_object)
         self.service_provider.queue.put(dummy_poweroff_request)
 
     # 功能：构造等待对象 加入等待队列
@@ -212,12 +206,14 @@ class Scheduler(Thread):
     def _enqueue_wait_object(self, serve_object: ServeObject = None, request: Request = None):
         wait_object = None
         if serve_object is not None:
-            wait_object = QueueObjectFactory.create_wait_object(
-                serve_object=serve_object
-            )
+            wait_object = QueueObjectFactory.create_wait_object(serve_object=serve_object)
         elif request is not None:
             wait_object = QueueObjectFactory.create_wait_object(request=request)
-        wait_object.timer = Timer(120, self.handle_timeout)
+        
+        print(f"... {datetime.now()} scheduler: wait <{wait_object.room_number}, {wait_object.speed}>")
+        
+        wait_object.timer = Timer(self.wait_time, self.handle_timeout)
+        wait_object.timer.start()
         self.wait_queue.add(wait_object)
 
     # 功能：构造服务对象 加入服务队列
@@ -235,6 +231,9 @@ class Scheduler(Thread):
         elif wait_object is not None:
             serve_object = QueueObjectFactory.create_serve_object(wait_object=wait_object)
             request = RequestFactory.create_request(wait_object=wait_object)
+        
+        print(f"... {datetime.now()} scheduler: serve <{request.room_number}, {request.target_temp}, {request.target_speed}>")
+        
         self.serve_queue.add(serve_object)
         self.service_provider.queue.put(request)
 
@@ -246,6 +245,8 @@ class Scheduler(Thread):
     # serve_queue 被更新
     # service_provider 获得 Serve 请求
     def _update_serv_object(self, wait_object: WaitObject = None, request: Request = None):
+        print(f"... {datetime.now()} scheduler: update <{request.room_number}, {request.target_temp}, {request.target_speed}>")
+        
         # if wait_object is not None:
         #     request = RequestFactory.create_request(wait_object=wait_object)
         #     serve_object = QueueObjectFactory.create_serve_object(wait_object=wait_object)
@@ -267,6 +268,9 @@ class Scheduler(Thread):
     # _enqueue_wait_object()
     def _evict(self, oldest: bool = False):
         popped_serve_object = self.serve_queue.pop(oldest)
+        
+        print(f"... {datetime.now()} scheduler: evict <{popped_serve_object.room_number}>")
+
         # 1. 发送关机请求 (dummy request)
         self._cancel_service(serve_object=popped_serve_object)
         # 2. 旧的服务对象进入等待队列
